@@ -12,7 +12,7 @@ app.all('/*', (req, res) => {
   console.log('req: '+req.originalUrl);
 
 
-  console.log('body: '+req.body);
+  console.log(JSON.stringify(req.body);
   res.setHeader("headeDeRetorno", Date.now());
 
 
