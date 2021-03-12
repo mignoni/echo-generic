@@ -5,6 +5,7 @@ const port = process.env.PORT || 8080;
 
 function ResponseEcho(list) {
     this.countArray = list.length;
+    this.lastDate = list[this.countArray-1].receivedDate;
     this.list = list;
 }
 
