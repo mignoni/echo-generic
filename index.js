@@ -12,6 +12,7 @@ function ResponseEcho(list) {
 function ItemEcho(body, receivedDate) {
     this.body = body;
     this.receivedDate = new Date(receivedDate).toISOString();
+    this.receivedDateMili = receivedDate;
 }
 
 app.use(bodyParser.json());
