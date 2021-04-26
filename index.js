@@ -1,3 +1,22 @@
+const log4js = require("log4js");
+const loggerEcho = log4js.getLogger("echo");
+loggerEcho.level = "info";
+
+const config = require("./config");
+
+const jwt = require('express-jwt');
+const getPublicKey = require('./lib/getPublicKey');
+
+loggerEcho.info(config.AUTH0_DOMAIN);
+
+const jwtCheck = jwt({
+    secret: getPublicKey(config.AUTH0_DOMAIN),
+    audience: config.RESOURCE_SERVER,
+    algorithms: [ 'RS256' ],
+    issuer: `https://${config.AUTH0_DOMAIN}/`
+});
+
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
@@ -20,6 +39,12 @@ app.use(bodyParser.text());
 app.use(bodyParser.raw());
 app.use(bodyParser.urlencoded({extended: false, type: '*/*'}));
 
+app.use('/auth/*', jwtCheck, function(req, res, next) {
+    if (req.user) {
+        loggerEcho.debug('Auth: Current user: ' + req.user.sub + ' (scope=' + (req.user.scope || 'N/A') + ')');
+    }
+    next();
+});
 
 app.all('/*', (req, res) => {
 
@@ -27,12 +52,12 @@ app.all('/*', (req, res) => {
 
     res.setHeader("X-response-date", new Date(dataChegou).toISOString());
 
-    if ("DELETE" == req.method) {
+    if ("DELETE" === req.method) {
         app.set(req.originalUrl, null);
         return res.sendStatus(200);
     }
 
-    if ("POST" == req.method) {
+    if ("POST" === req.method) {
 
         let lista = app.get(req.originalUrl);
         if(!lista){
@@ -43,19 +68,19 @@ app.all('/*', (req, res) => {
         lista.push(itemEcho);
 
         app.set(req.originalUrl, lista);
-        app.set("date_"+req.originalUrl, itemEcho.dataRecebido);
+        app.set("date_"+req.originalUrl, itemEcho.receivedDate);
 
         return res.sendStatus(200);
     }
 
     let salvedBody;
 
-    if ("GET" == req.method) {
+    if ("GET" === req.method) {
 
         salvedBody = app.get(req.originalUrl);
 
     }
-    console.log('req: ' + req.originalUrl);
+    loggerEcho.log('req: ' + req.originalUrl);
 
     if(salvedBody){
         if(!salvedBody){
@@ -70,5 +95,6 @@ app.all('/*', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`App listening at http://------:${port}`)
+    loggerEcho.log(`App listening at https://------:${port}`)
 })
+
