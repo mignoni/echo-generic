@@ -1,10 +1,7 @@
 {
   "name": "echo-generic",
   "version": "0.3.0",
-  "description": "A sample Node.js app using Express 4",
-  "engines": {
-    "node": "14.x"
-  },
+  "description": "Aplicação generica para implementação de callback mock",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
