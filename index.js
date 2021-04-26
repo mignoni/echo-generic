@@ -18,10 +18,11 @@ function ResponseEcho(list) {
     this.list = list;
 }
 
-function ItemEcho(body, receivedDate) {
+function ItemEcho(body, receivedDate, withAuthentication) {
     this.body = body;
     this.receivedDate = new Date(receivedDate).toISOString();
     this.receivedDateMili = receivedDate;
+    this.withAuthentication = withAuthentication;
 }
 
 app.use(bodyParser.json());
@@ -29,8 +30,10 @@ app.use(bodyParser.text());
 app.use(bodyParser.raw());
 app.use(bodyParser.urlencoded({extended: false, type: '*/*'}));
 
-
+let withAuthentication = false;
 if (config.AUTH0_DOMAIN && config.RESOURCE_SERVER) {
+
+    withAuthentication = true;
 
     loggerEcho.info('Aplicação echo-generic COM autenticação');
     loggerEcho.info('AUTH0_DOMAIN: ' + config.AUTH0_DOMAIN);
@@ -71,7 +74,7 @@ app.all('/*', (req, res) => {
             lista = [];
         }
 
-        let itemEcho = new ItemEcho(req.body, dataChegou);
+        let itemEcho = new ItemEcho(req.body, dataChegou, withAuthentication);
         lista.push(itemEcho);
 
         app.set(req.originalUrl, lista);
