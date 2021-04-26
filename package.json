@@ -12,11 +12,11 @@
     "express": "^4.15.2",
     "express-jwt": "^6.0.0",
     "log4js": "^6.3.0",
-    "ms": "^2.0.0"
+    "ms": "^2.0.0",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "got": "^11.3.0",
-    "request": "^2.88.2",
     "tape": "^4.7.0"
   },
   "repository": {
