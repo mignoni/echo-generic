@@ -7,16 +7,6 @@ const config = require("./config");
 const jwt = require('express-jwt');
 const getPublicKey = require('./lib/getPublicKey');
 
-loggerEcho.info(config.AUTH0_DOMAIN);
-
-const jwtCheck = jwt({
-    secret: getPublicKey(config.AUTH0_DOMAIN),
-    audience: config.RESOURCE_SERVER,
-    algorithms: [ 'RS256' ],
-    issuer: `https://${config.AUTH0_DOMAIN}/`
-});
-
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
@@ -24,7 +14,7 @@ const port = process.env.PORT || 8080;
 
 function ResponseEcho(list) {
     this.countArray = list.length;
-    this.lastDate = list[this.countArray-1].receivedDate;
+    this.lastDate = list[this.countArray - 1].receivedDate;
     this.list = list;
 }
 
@@ -39,12 +29,29 @@ app.use(bodyParser.text());
 app.use(bodyParser.raw());
 app.use(bodyParser.urlencoded({extended: false, type: '*/*'}));
 
-app.use('/auth/*', jwtCheck, function(req, res, next) {
-    if (req.user) {
-        loggerEcho.debug('Auth: Current user: ' + req.user.sub + ' (scope=' + (req.user.scope || 'N/A') + ')');
-    }
-    next();
-});
+
+if (config.AUTH0_DOMAIN && config.RESOURCE_SERVER) {
+
+    loggerEcho.info('Aplicação echo-generic COM autenticação');
+    loggerEcho.info('AUTH0_DOMAIN: ' + config.AUTH0_DOMAIN);
+    loggerEcho.info('RESOURCE_SERVER: ' + config.RESOURCE_SERVER);
+
+    const jwtCheck = jwt({
+        secret: getPublicKey(config.AUTH0_DOMAIN),
+        audience: config.RESOURCE_SERVER,
+        algorithms: ['RS256'],
+        issuer: `https://${config.AUTH0_DOMAIN}/`
+    });
+
+    app.use('/auth/*', jwtCheck, function (req, res, next) {
+        if (req.user) {
+            loggerEcho.info('Auth: Current user: ' + req.user.sub + ' (scope=' + (req.user.scope || 'N/A') + ')');
+        }
+        next();
+    });
+} else {
+    loggerEcho.info('Aplicação echo-generic SEM autenticação');
+}
 
 app.all('/*', (req, res) => {
 
@@ -60,7 +67,7 @@ app.all('/*', (req, res) => {
     if ("POST" === req.method) {
 
         let lista = app.get(req.originalUrl);
-        if(!lista){
+        if (!lista) {
             lista = [];
         }
 
@@ -68,7 +75,7 @@ app.all('/*', (req, res) => {
         lista.push(itemEcho);
 
         app.set(req.originalUrl, lista);
-        app.set("date_"+req.originalUrl, itemEcho.receivedDate);
+        app.set("date_" + req.originalUrl, itemEcho.receivedDate);
 
         return res.sendStatus(200);
     }
@@ -82,14 +89,14 @@ app.all('/*', (req, res) => {
     }
     loggerEcho.log('req: ' + req.originalUrl);
 
-    if(salvedBody){
-        if(!salvedBody){
+    if (salvedBody) {
+        if (!salvedBody) {
             salvedBody = [];
         }
         let responseEcho = new ResponseEcho(salvedBody);
 
         return res.send(responseEcho);
-    }else{
+    } else {
         return res.sendStatus(404);
     }
 })
