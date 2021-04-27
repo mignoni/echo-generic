@@ -30,10 +30,8 @@ app.use(bodyParser.text());
 app.use(bodyParser.raw());
 app.use(bodyParser.urlencoded({extended: false, type: '*/*'}));
 
-let withAuthentication = false;
 if (config.AUTH0_DOMAIN && config.RESOURCE_SERVER) {
-
-    withAuthentication = true;
+    ;
 
     loggerEcho.info('Aplicação echo-generic COM autenticação');
     loggerEcho.info('AUTH0_DOMAIN: ' + config.AUTH0_DOMAIN);
@@ -72,6 +70,11 @@ app.all('/*', (req, res) => {
         let lista = app.get(req.originalUrl);
         if (!lista) {
             lista = [];
+        }
+
+        let withAuthentication = false;
+        if (req.user) {
+            withAuthentication = true;
         }
 
         let itemEcho = new ItemEcho(req.body, dataChegou, withAuthentication);
